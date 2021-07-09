@@ -8,7 +8,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 )
 
 type data struct {
@@ -16,6 +18,7 @@ type data struct {
 		PrivateFeeds struct{
 			List []struct{
 				ImgUrls []string `json:"imgUrls"`
+				WorkType string `json:"workType"`
 			} `json:"list"`
 		} `json:"privateFeeds"`
 	} `json:"data"`
@@ -68,6 +71,8 @@ func request(userId string,count string) {
 		fmt.Println(err)
 		return
 	}
+
+	fmt.Println(string(body))
 	
 	var d data
 	err = json.Unmarshal(body,&d)
@@ -76,14 +81,15 @@ func request(userId string,count string) {
 		return
 	}
 
+
 	for _, imgUrls := range d.Data.PrivateFeeds.List {
 		for _, url := range imgUrls.ImgUrls {
-			imageDownload(url)
+			imageDownload(url,imgUrls.WorkType)
 		}
 	}
 }
 
-func imageDownload(imageUrl string){
+func imageDownload(imageUrl,workType string){
 	req, err := http.NewRequest("GET",imageUrl,nil)
 	if err != nil {
 		panic(err)
@@ -93,9 +99,13 @@ func imageDownload(imageUrl string){
 	client := &http.Client{}
 	resp, err := client.Do(req)
 
-	split := strings.Split(imageUrl,"/")
-	imageName := split[len(split) - 1]
-
+	imageName := ""
+	if workType == "vertical" {
+		split := strings.Split(imageUrl,"/")
+		imageName = split[len(split) - 1]
+	}else {
+		imageName = strconv.FormatInt(time.Now().UnixNano(),10) + ".jpg"
+	}
 
 	f, err := os.Create(path + imageName)
 	if err != nil {
