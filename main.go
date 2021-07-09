@@ -21,10 +21,10 @@ type data struct {
 	} `json:"data"`
 }
 
-const path = `C:/Users/EDZ/Desktop/吃饱饱_/`
+const path = ``
 
 func main() {
-	userId := "Yik2020520"
+	userId := ""
 	count := "500"
 
 	request(userId,count)
